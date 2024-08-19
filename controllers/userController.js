@@ -165,3 +165,19 @@ exports.getProductDetails = async (req, res) => {
     }
 };
 
+// User - Fetch Cart
+exports.fetchCart = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const user = await User.findById(userId).populate('cart.product');
+        
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        
+        res.status(200).json({ success: true, cart: user.cart });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};

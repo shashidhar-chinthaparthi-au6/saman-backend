@@ -5,12 +5,13 @@ const {
     updateProduct,
     deleteProduct,
     getProducts,
-    getProductDetails,  // Import the new controller function
+    getProductDetails,
     addToCart,
     removeFromCart,
     checkout,
     confirmOrder,
     cancelOrder,
+    fetchCart,  // Added route for fetching the cart
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 
@@ -26,7 +27,8 @@ router.delete('/product/:id', protect, authorize('Admin'), deleteProduct);
 
 // User
 router.get('/products', getProducts);
-router.get('/products/:id', getProductDetails);  // New route for product details
+router.get('/products/:id', getProductDetails);
+router.get('/cart', protect, authorize('User'), fetchCart);  // Fetch cart route
 router.post('/cart', protect, authorize('User'), addToCart);
 router.delete('/cart/:productId', protect, authorize('User'), removeFromCart);
 router.post('/checkout', protect, authorize('User'), checkout);
