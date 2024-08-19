@@ -87,13 +87,17 @@ exports.addToCart = async (req, res) => {
     }
 };
 
+// User - Remove Item from Cart by cartId
 exports.removeFromCart = async (req, res) => {
-    const { productId } = req.params;
+    const { cartId } = req.params;
     const userId = req.user.id;
 
     try {
         const user = await User.findById(userId);
-        user.cart = user.cart.filter(item => item.product.toString() !== productId);
+
+        // Filter out the item with the given cartId
+        user.cart = user.cart.filter(item => item._id.toString() !== cartId);
+        
         await user.save();
 
         res.status(200).json({ success: true, cart: user.cart });
@@ -101,6 +105,7 @@ exports.removeFromCart = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
 
 // User - Checkout and Order
 exports.checkout = async (req, res) => {
@@ -176,6 +181,28 @@ exports.fetchCart = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         
+        res.status(200).json({ success: true, cart: user.cart });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// User - Remove Item from Cart by cartId
+exports.removeFromCart = async (req, res) => {
+    const { cartId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.cart = user.cart.filter(item => item._id.toString() !== cartId);
+        
+        await user.save();
+
         res.status(200).json({ success: true, cart: user.cart });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

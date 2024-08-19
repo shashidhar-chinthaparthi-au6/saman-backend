@@ -30,7 +30,7 @@ router.get('/products', getProducts);
 router.get('/products/:id', getProductDetails);
 router.get('/cart', protect, authorize('User'), fetchCart);  // Fetch cart route
 router.post('/cart', protect, authorize('User'), addToCart);
-router.delete('/cart/:productId', protect, authorize('User'), removeFromCart);
+router.delete('/cart/:cartId', protect, authorize('User'), removeFromCart);
 router.post('/checkout', protect, authorize('User'), checkout);
 
 // Admin - Order management
