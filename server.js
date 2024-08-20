@@ -17,6 +17,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
+const categoryRoutes = require("./routes/categoryRoutes")
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);  // Mount admin routes
 app.use('/api/v1/users', userRoutes);  // Mount user routes
 app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/', categoryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

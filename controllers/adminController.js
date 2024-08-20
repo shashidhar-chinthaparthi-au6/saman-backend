@@ -16,15 +16,27 @@ exports.createAdmin = async (req, res) => {
 
 // Admin - Add/Update/Delete Products
 exports.addProduct = async (req, res) => {
-    const { category, subCategory, price, description, offer, discountPrice, quantity, availability } = req.body;
-
     try {
-        const product = await Product.create({ category, subCategory, price, description, offer, discountPrice, quantity, availability });
-        res.status(201).json({ success: true, product });
+        const { category, subCategory, price, description, offer, discountPrice, quantity, availability, image } = req.body;
+
+        const product = await Product.create({
+            category,
+            subCategory,
+            price,
+            description,
+            offer,
+            discountPrice,
+            quantity,
+            availability,
+            image
+        });
+
+        res.status(201).json({ success: true, data: product });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(400).json({ success: false, error: error.message });
     }
 };
+
 
 exports.updateProduct = async (req, res) => {
     const { id } = req.params;
