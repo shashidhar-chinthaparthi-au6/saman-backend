@@ -8,12 +8,6 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['SuperAdmin', 'Admin', 'User'], default: 'User' },
     region: { type: String },
-    cart: [
-        {
-            product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-            quantity: { type: Number, required: true },
-        },
-    ],
 }, { timestamps: true });
 
 // Password hashing
