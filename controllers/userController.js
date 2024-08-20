@@ -3,18 +3,20 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 
 // Get Products by Category with Random Image
+
 exports.getProductsByCategory = async (req, res) => {
-    const { category } = req.query;
-
     try {
-        const products = await Product.find(category ? { category } : {});
+        // Fetch distinct categories from the Product collection
+        const categories = await Product.distinct("category");
 
-        // Attach random Lorem Ipsum image
-        products.forEach(product => {
-            product.image = `https://via.placeholder.com/150?text=${encodeURIComponent(product.subCategory)}`;
-        });
+        // Attach random Loremflickr image to each category
+        const categoriesWithImages = categories.map(category => ({
+            name: category,
+            image: `https://loremflickr.com/320/240/${encodeURIComponent(category)}`
+        }));
 
-        res.status(200).json({ success: true, products });
+        // Return the list of categories with images
+        res.status(200).json({ success: true, categories: categoriesWithImages });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
