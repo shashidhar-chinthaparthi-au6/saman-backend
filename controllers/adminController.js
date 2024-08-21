@@ -17,7 +17,7 @@ exports.createAdmin = async (req, res) => {
 // Admin - Add/Update/Delete Products
 exports.addProduct = async (req, res) => {
     try {
-        const { category, subCategory, price, description, offer, discountPrice, quantity, availability, image } = req.body;
+        const { category, subCategory, price, description, offer, discountPrice, quantity, availability, image,name } = req.body;
 
         const product = await Product.create({
             category,
@@ -28,7 +28,8 @@ exports.addProduct = async (req, res) => {
             discountPrice,
             quantity,
             availability,
-            image
+            image,
+            name
         });
 
         res.status(201).json({ success: true, data: product });

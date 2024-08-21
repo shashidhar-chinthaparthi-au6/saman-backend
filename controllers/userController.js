@@ -65,11 +65,22 @@ exports.addToCart = async (req, res) => {
 
     try {
         const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
         const product = await Product.findById(productId);
 
         if (!product) {
             return res.status(404).json({ success: false, error: 'Product not found' });
         }
+
+        console.log("User:", user);
+        console.log("Product ID:", productId);
+
+        // Initialize cart if undefined
+        user.cart = user.cart || [];
 
         // Check if product is already in the cart
         const cartItem = user.cart.find(item => item.product.toString() === productId);
@@ -83,6 +94,7 @@ exports.addToCart = async (req, res) => {
 
         res.status(200).json({ success: true, cart: user.cart });
     } catch (error) {
+        console.error("Error adding to cart:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 };

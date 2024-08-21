@@ -17,7 +17,8 @@ const productSchema = new mongoose.Schema({
     discountPrice: Number,
     quantity: Number,
     availability: Boolean,
-    image: String
+    image: String,
+    name: String
 });
 
 const Product = mongoose.model('Product', productSchema);
