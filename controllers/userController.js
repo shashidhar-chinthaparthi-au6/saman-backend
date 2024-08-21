@@ -122,20 +122,24 @@ exports.fetchCartSummary = async (req, res) => {
     const userId = req.user.id;
 
     try {
+        // Fetch user and populate the cart items' products
         const user = await User.findById(userId).populate('cart.product');
-        
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
-        
+
+        // Create cart summary
         const cartSummary = user.cart.map(item => ({
             product: item.product,
             quantity: item.quantity,
-            totalPrice: item.quantity * item.product.price,
+            totalPrice: item.quantity * (item.product ? item.product.price : 0), // Ensure product exists
         }));
 
+        // Send response
         res.status(200).json({ success: true, cartSummary });
     } catch (error) {
+        // Handle errors
         res.status(500).json({ success: false, error: error.message });
     }
 };

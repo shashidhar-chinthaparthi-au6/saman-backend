@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Product = require('./Product'); 
+
+const cartItemSchema = new mongoose.Schema({
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    quantity: { type: Number, required: true },
+}, { _id: false }); // Add _id: false if cartItemSchema is used directly within User schema
 
 const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -8,6 +14,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['SuperAdmin', 'Admin', 'User'], default: 'User' },
     region: { type: String },
+    cart: [cartItemSchema], // Use cartItemSchema for cart
 }, { timestamps: true });
 
 // Password hashing
