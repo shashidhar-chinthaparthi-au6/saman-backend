@@ -1,6 +1,8 @@
 const Razorpay = require('razorpay');
 const Order = require('../models/Order');
 const dotenv = require('dotenv');
+const Cart = require('../models/Cart');
+const User = require('../models/User');
 
 dotenv.config();
 
@@ -11,28 +13,43 @@ const razorpay = new Razorpay({
 
 exports.createOrder = async (req, res) => {
     const { amount } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.id; // Get the user ID from the token
 
     try {
-        const options = {
-            amount: amount * 100, // amount in paise
-            currency: "INR",
-            receipt: `receipt_order_${Math.random().toString(36).substr(2, 9)}`,
-            payment_capture: '1'
-        };
+        // Find the user and their cart items
+        const user = await User.findById(userId).populate('cart.product');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-        const response = await razorpay.orders.create(options);
+        // Prepare order items
+        const orderItems = user.cart.map(item => ({
+            product: item.product._id,
+            quantity: item.quantity,
+            price: item.product.price, // Assuming price is a field in Product model
+        }));
 
+        // Create the order
         const order = await Order.create({
             user: userId,
-            razorpayOrderId: response.id,
-            amount: amount,
-            status: 'Pending'
+            items: orderItems,
+            totalAmount: amount,
         });
 
-        res.status(200).json({ success: true, order, response });
+        // Clear the user's cart
+        user.cart = [];
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Order placed successfully',
+            order,
+        });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({
+            success: false,
+            error: error.message,
+        });
     }
 };
 
@@ -60,3 +77,20 @@ exports.verifyPayment = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+exports.getUserOrders = async (req, res) => {
+    try {
+      // Fetch orders for the authenticated user
+      const orders = await Order.find({ user: req.user.id })
+        .populate('user', 'name email') // Fetch user details
+        .populate('items.product', 'name price'); // Fetch product details
+  
+      res.status(200).json({
+        success: true,
+        count: orders.length,
+        orders,
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  };
