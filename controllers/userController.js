@@ -108,7 +108,7 @@ exports.removeFromCart = async (req, res) => {
         const user = await User.findById(userId);
 
         // Filter out the item with the given cartId
-        user.cart = user.cart.filter(item => item._id.toString() !== cartId);
+        user.cart = user.cart.filter(item => item.product.toString() !== cartId);
         await user.save();
 
         res.status(200).json({ success: true, cart: user.cart });
