@@ -1,92 +1,113 @@
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
-
-// SuperAdmin - Create an Admin
-exports.createAdmin = async (req, res) => {
-    const { name, email, password, region } = req.body;
-
+  
+  // Define the addProduct function
+  exports.addProduct = async (req, res) => {
     try {
-        const user = await User.create({ name, email, password, role: 'Admin', region });
-        res.status(201).json({ success: true, user });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-};
-
-// Admin - Add/Update/Delete Products
-exports.addProduct = async (req, res) => {
-    try {
-        const { category, subCategory, price, description, offer, discountPrice, quantity, availability, image,name } = req.body;
-
-        const product = await Product.create({
-            category,
-            subCategory,
-            price,
-            description,
-            offer,
-            discountPrice,
-            quantity,
-            availability,
-            image,
-            name
+      console.log("Request Body:", req.body);
+      console.log("Request Files:", req.files);
+  
+      const images = req.files ? req.files.map(file => file.path) : [];
+  
+      const { name, price, category, subcategory } = req.body;
+  
+      if (!name || !price || !category || !subcategory) {
+        return res.status(400).json({
+          success: false,
+          error: 'Name, price, category, and subcategory are required.'
         });
-
-        res.status(201).json({ success: true, data: product });
+      }
+  
+      const product = await Product.create({
+        name,
+        description: req.body.description,
+        price,
+        category,
+        subcategory,
+        images,
+      });
+  
+      res.status(201).json({ success: true, data: product });
     } catch (error) {
-        res.status(400).json({ success: false, error: error.message });
+      console.error("Error adding product:", error);
+      res.status(400).json({ success: false, error: error.message });
     }
+  };
+  
+exports.createAdmin = async (req, res) => {
+  try {
+    const admin = await User.create({
+      ...req.body,
+      role: 'Admin',
+    });
+    res.status(201).json({ success: true, data: admin });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
+exports.addProduct = async (req, res) => {
+  try {
+    const product = await Product.create(req.body);
+    res.status(201).json({ success: true, data: product });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
 
 exports.updateProduct = async (req, res) => {
-    const { id } = req.params;
-    const updateData = req.body;
-
-    try {
-        const product = await Product.findByIdAndUpdate(id, updateData, { new: true });
-        res.status(200).json({ success: true, product });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+  try {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+    res.status(200).json({ success: true, data: product });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
 exports.deleteProduct = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        await Product.findByIdAndDelete(id);
-        res.status(200).json({ success: true, message: 'Product deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+  try {
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+    res.status(200).json({ success: true, message: 'Product deleted' });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
-// Admin - Confirm/Cancel Orders
 exports.confirmOrder = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const order = await Order.findById(id);
-        order.status = 'Confirmed';
-        await order.save();
-
-        res.status(200).json({ success: true, order });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+  try {
+    const order = await Order.findByIdAndUpdate(req.params.id, { status: 'Confirmed' }, { new: true });
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 };
 
 exports.cancelOrder = async (req, res) => {
-    const { id } = req.params;
+  try {
+    const order = await Order.findByIdAndUpdate(req.params.id, { status: 'Cancelled' }, { new: true });
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found' });
+    res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
 
-    try {
-        const order = await Order.findById(id);
-        order.status = 'Cancelled';
-        await order.save();
+exports.getProducts = async (req, res) => {
+  try {
+    const { category, subcategory, search } = req.query;
 
-        res.status(200).json({ success: true, order });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+    const query = {};
+    if (category) query.category = category;
+    if (subcategory) query.subcategory = subcategory;
+    if (search) query.name = { $regex: search, $options: 'i' }; // Case-insensitive search
+
+    const products = await Product.find(query);
+    res.status(200).json({ data: products });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching products' });
+  }
 };
