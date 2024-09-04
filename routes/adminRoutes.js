@@ -7,6 +7,7 @@ const {
     confirmOrder,
     cancelOrder,
     getProducts,
+    getProductsBySubCategory,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
 const { addCategory, addSubcategory, getCategories, getSubcategories, getAllSubcategories, removeCategory, removeSubcategory } = require('../controllers/categoryController');
@@ -37,5 +38,6 @@ router.get('/categories',  getCategories);
 router.get('/subcategories/:categoryId',  getSubcategories);
 router.get('/subcategories', getAllSubcategories); 
 router.delete('/subcategory/:id', removeSubcategory);
+router.get('/subcategories/:subCategoryId/products', getProductsBySubCategory);
 
 module.exports = router;

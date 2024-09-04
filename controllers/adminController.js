@@ -111,3 +111,14 @@ exports.getProducts = async (req, res) => {
     res.status(500).json({ message: 'Error fetching products' });
   }
 };
+
+
+exports.getProductsBySubCategory = async (req, res) => {
+  try {
+      const { subCategoryId } = req.params;
+      const products = await Product.find({ subcategory: subCategoryId });
+      res.json({ success: true, data: products });
+  } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+  }
+};
