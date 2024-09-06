@@ -15,7 +15,10 @@ const {
     getOrderSummary,
     getProducts,
     submitCancellationReason,
-    updateCartItem 
+    updateCartItem, 
+    getAddresses,
+    addAddress,
+    updateAddress
 } = require('../controllers/orderController');
 
 const { protect, authorize } = require('../middlewares/authMiddleware');
@@ -46,5 +49,9 @@ router.get('/orders/history', getOrderHistory);
 router.post('/cancel/:orderId', cancelOrder);
 router.get('/order/cancellation-reasons', getCancellationReasons);
 router.post('/order/cancel/:orderId/reason', submitCancellationReason);
+
+router.get('/addresses', getAddresses);
+router.post('/addresses', addAddress);
+router.put('/addresses/:addressId', updateAddress);
 
 module.exports = router;
