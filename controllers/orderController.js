@@ -13,29 +13,61 @@ exports.getProducts = async (req, res) => {
 };
 
 // Add product to cart
+// Add product to cart
 exports.addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;  // Ensure these fields are provided in the request body
+    const { userId, productId, quantity } = req.body;
     if (!userId || !productId) {
       return res.status(400).json({ success: false, message: 'User and Product are required.' });
     }
 
-    const cartItem = new Cart({ user: userId, product: productId, quantity });
-    await cartItem.save();
-    res.status(201).json({ success: true, data: cartItem });
+    if (quantity <= 0) {
+      return res.status(400).json({ success: false, message: 'Quantity must be greater than zero.' });
+    }
+
+    const existingCartItem = await Cart.findOne({ user: userId, product: productId });
+    if (existingCartItem) {
+      // Update existing cart item quantity
+      existingCartItem.quantity = quantity;
+      if (quantity <= 0) {
+        await Cart.findByIdAndRemove(existingCartItem._id); // Remove item if quantity is zero or less
+        return res.status(200).json({ success: true, message: 'Item removed from cart' });
+      } else {
+        await existingCartItem.save();
+        return res.status(200).json({ success: true, data: existingCartItem });
+      }
+    } else {
+      if (quantity > 0) {
+        const cartItem = new Cart({ user: userId, product: productId, quantity });
+        await cartItem.save();
+        return res.status(201).json({ success: true, data: cartItem });
+      } else {
+        return res.status(400).json({ success: false, message: 'Quantity must be greater than zero.' });
+      }
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
+
 // Update cart item quantity
 exports.updateCartItem = async (req, res) => {
   try {
     const { cartItemId } = req.params;
     const { quantity } = req.body;
-    const cartItem = await Cart.findByIdAndUpdate(cartItemId, { quantity }, { new: true });
-    res.status(200).json(cartItem);
+
+    if (quantity <= 0) {
+      await Cart.findByIdAndRemove(cartItemId); // Remove item if quantity is zero or less
+      return res.status(200).json({ success: true, message: 'Item removed from cart' });
+    } else {
+      const cartItem = await Cart.findByIdAndUpdate(cartItemId, { quantity }, { new: true });
+      if (!cartItem) {
+        return res.status(404).json({ message: 'Cart item not found' });
+      }
+      res.status(200).json(cartItem);
+    }
   } catch (error) {
     res.status(500).json({ message: 'Error updating cart item', error });
   }
