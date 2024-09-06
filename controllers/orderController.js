@@ -1,6 +1,7 @@
 const Product = require('../models/Product');
 const Cart = require('../models/CartItem');
 const Order = require('../models/Order');
+const Address = require('../models/Address');
 
 // Fetch available products
 exports.getProducts = async (req, res) => {
@@ -204,5 +205,38 @@ exports.submitCancellationReason = async (req, res) => {
     res.status(200).json(order);
   } catch (error) {
     res.status(500).json({ message: 'Error submitting cancellation reason', error });
+  }
+};
+
+exports.getAddresses = async (req, res) => {
+  try {
+    const addresses = await Address.find({ user: req.user.id });
+    res.status(200).json(addresses);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching addresses', error });
+  }
+};
+
+// Add a new address
+exports.addAddress = async (req, res) => {
+  try {
+    const { address, contact } = req.body;
+    const newAddress = new Address({ user: req.user.id, address, contact });
+    await newAddress.save();
+    res.status(201).json(newAddress);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding address', error });
+  }
+};
+
+// Update an existing address
+exports.updateAddress = async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const { address, contact } = req.body;
+    const updatedAddress = await Address.findByIdAndUpdate(addressId, { address, contact }, { new: true });
+    res.status(200).json(updatedAddress);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating address', error });
   }
 };
