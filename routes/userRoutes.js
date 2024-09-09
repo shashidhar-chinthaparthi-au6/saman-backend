@@ -9,8 +9,11 @@ const {
     checkout,
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middlewares/authMiddleware');
+const { getUserDetails } = require('../controllers/authController');
 
 const router = express.Router();
+
+router.get('/account', protect, getUserDetails);
 
 // User - Browse and Search Products
 router.get('/products', getProductsByCategory);

@@ -75,3 +75,15 @@ exports.googleLogin = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+exports.getUserDetails = async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).select('name email role');
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.status(200).json({ user });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
